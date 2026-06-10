@@ -26,7 +26,6 @@ const initQueue = () => {
   requestWorker = new Worker(
     'requestQueue',
     async (job) => {
-      // Placeholder -- worker cluster handles actual processing
       logger.info('Worker claimed job', { jobId: job.id, name: job.name });
       return job.data;
     },

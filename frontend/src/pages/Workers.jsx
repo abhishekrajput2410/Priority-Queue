@@ -25,10 +25,10 @@ export default function Workers() {
           <table className="min-w-full divide-y divide-white/10 text-left text-sm text-brand-200">
             <thead>
               <tr>
-                <th className="px-4 py-3">Worker ID</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Jobs Processed</th>
-                <th className="px-4 py-3">Last Seen</th>
+                <th className="px-4 py-3">Worker ID </th>
+                <th className="px-4 py-3">Status </th>
+                <th className="px-4 py-3">Jobs Processed </th>
+                <th className="px-4 py-3">Last Seen </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
