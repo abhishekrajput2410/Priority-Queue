@@ -6,7 +6,6 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-// const xss = require('xss-clean');
 const morgan = require('morgan');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./docs/swagger');
@@ -34,7 +33,6 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(helmet());
-// app.use(xss());
 app.use(morgan('combined'));
 app.use(logRequests);
 
