@@ -6,6 +6,8 @@ const {
   refreshToken,
   forgotPassword,
   resetPassword,
+  listUsers,
+  createUserByAdmin,
 } = require('../services/auth.service');
 const { created, ok, badRequest } = require('../utils/response.util');
 
@@ -68,6 +70,24 @@ const handleVerifyEmail = async (req, res) => {
   }
 };
 
+const handleListUsers = async (req, res) => {
+  try {
+    const users = await listUsers();
+    return ok(res, users);
+  } catch (error) {
+    return badRequest(res, error.message);
+  }
+};
+
+const handleCreateUser = async (req, res) => {
+  try {
+    const user = await createUserByAdmin(req.body);
+    return created(res, user);
+  } catch (error) {
+    return badRequest(res, error.message);
+  }
+};
+
 module.exports = {
   handleRegister,
   handleLogin,
@@ -76,4 +96,6 @@ module.exports = {
   handleForgotPassword,
   handleResetPassword,
   handleVerifyEmail,
+  handleListUsers,
+  handleCreateUser,
 };

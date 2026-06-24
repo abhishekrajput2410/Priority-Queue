@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE
+  || (import.meta.env.DEV ? '/api' : 'http://localhost:5000/api');
 
 const getToken = () => {
   const stored = window.localStorage.getItem('pq_user');

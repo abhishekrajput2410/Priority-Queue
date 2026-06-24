@@ -1,7 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 
-const createSocket = () => io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000', {
+const getSocketUrl = () => {
+  if (import.meta.env.VITE_SOCKET_URL) return import.meta.env.VITE_SOCKET_URL;
+  if (typeof window !== 'undefined') return window.location.origin;
+  return 'http://localhost:5000';
+};
+
+const createSocket = () => io(getSocketUrl(), {
   transports: ['websocket'],
 });
 

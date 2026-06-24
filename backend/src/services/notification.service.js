@@ -9,4 +9,14 @@ const createNotification = async ({ title, message, type = 'info', requestId, us
 
 const getNotifications = async (userId) => Notification.find({ userId }).sort({ createdAt: -1 });
 
-module.exports = { createNotification, getNotifications };
+const markNotificationRead = async (notificationId, userId) => {
+  const notification = await Notification.findOneAndUpdate(
+    { _id: notificationId, userId },
+    { read: true },
+    { new: true },
+  );
+  if (!notification) throw new Error('Notification not found');
+  return notification;
+};
+
+module.exports = { createNotification, getNotifications, markNotificationRead };

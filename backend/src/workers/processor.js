@@ -1,5 +1,5 @@
 const { Worker } = require('bullmq');
-const { getRedis } = require('../config/redis');
+const { isRedisAvailable, getQueueConnection } = require('../config/redis');
 
 const Request = require('../models/request.model');
 const FailedJob = require('../models/failedJob.model');
@@ -22,11 +22,9 @@ const { logger } = require('../config/logger');
 const { pushEvent } = require('../sockets/socket');
 
 const createProcessingWorker = (workerId) => {
-  const redis = getRedis();
-
-  if (!redis) {
+  if (!isRedisAvailable()) {
     logger.warn(
-      `Skipping processing worker ${workerId} because Redis is unavailable`
+      `Skipping processing worker ${workerId} because Redis is unavailable`,
     );
     return null;
   }
@@ -38,7 +36,7 @@ const createProcessingWorker = (workerId) => {
 
       await markRequestProcessing(
         job.data.requestId,
-        workerId
+        workerId,
       );
 
       pushEvent('job:start', {
@@ -57,7 +55,7 @@ const createProcessingWorker = (workerId) => {
       await updateWorkerStatus(
         workerId,
         'idle',
-        null
+        null,
       );
 
       pushEvent('job:complete', {
@@ -68,9 +66,8 @@ const createProcessingWorker = (workerId) => {
 
       requestsCompleted.inc();
 
-      const duration =
-        Date.now() -
-        new Date(job.timestamp).getTime();
+      const duration = Date.now()
+        - new Date(job.timestamp).getTime();
 
       avgProcessingTime.set(duration);
 
@@ -86,21 +83,21 @@ const createProcessingWorker = (workerId) => {
       };
     },
     {
-      connection: redis,
+      connection: getQueueConnection(),
       concurrency: 10,
-    }
+    },
   );
 
   worker.on('failed', async (job, err) => {
     await updateWorkerStatus(
       workerId,
       'idle',
-      null
+      null,
     );
 
     await Request.findOneAndUpdate(
       { requestId: job.data.requestId },
-      { status: 'failed' }
+      { status: 'failed' },
     );
 
     await FailedJob.create({

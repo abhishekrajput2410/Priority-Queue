@@ -36,7 +36,7 @@ export default function Notifications() {
           No notifications
         </p>
         <p className="mt-3 text-sm text-brand-300">
-          You'll be notified when important events occur.
+          You&apos;ll be notified when important events occur.
         </p>
       </div>
     );
@@ -95,7 +95,7 @@ export default function Notifications() {
 
               <p className="mt-2 text-xs text-brand-400">
                 {new Date(
-                  notification.createdAt
+                  notification.createdAt,
                 ).toLocaleString()}
               </p>
             </div>

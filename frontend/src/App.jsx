@@ -69,6 +69,7 @@ function App() {
               {isAdmin && <Route path="/user-management" element={<UserManagement />} />}
 
               {/* User only routes */}
+              {isUser && <Route path="/requests" element={<Requests />} />}
               {isUser && <Route path="/my-requests" element={<MyRequests />} />}
 
               <Route path="*" element={<Navigate to={defaultRoute} />} />

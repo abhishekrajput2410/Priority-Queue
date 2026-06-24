@@ -1,51 +1,18 @@
-const { Queue, Worker, JobScheduler } = require('bullmq');
+const { Queue } = require('bullmq');
 const { logger } = require('../config/logger');
-const { getRedis } = require('../config/redis');
+const { isRedisAvailable, getQueueConnection } = require('../config/redis');
 const { priorityScores } = require('../utils/priority.util');
-const FailedJob = require('../models/failedJob.model');
 
 let requestQueue;
-let requestWorker;
-
-const getQueueConnection = () => ({
-  connection: getRedis(),
-});
 
 const initQueue = () => {
-  const redis = getRedis();
-  if (!redis) {
+  if (!isRedisAvailable()) {
     logger.warn('Skipping request queue initialization because Redis is unavailable');
     return;
   }
 
-  const scheduler = new JobScheduler('requestQueue', getQueueConnection());
-  scheduler.on('failed', (job, err) => logger.error('Queue scheduler failed', err));
-  requestQueue = new Queue('requestQueue', getQueueConnection());
+  requestQueue = new Queue('requestQueue', { connection: getQueueConnection() });
   requestQueue.on('added', (jobId) => logger.info(`Job added to requestQueue: ${jobId}`));
-
-  requestWorker = new Worker(
-    'requestQueue',
-    async (job) => {
-      logger.info('Worker claimed job', { jobId: job.id, name: job.name });
-      return job.data;
-    },
-    {
-      connection: redis,
-      concurrency: 10,
-      autorun: false,
-    },
-  );
-
-  requestWorker.on('failed', async (job, err) => {
-    logger.error('Job failed', { jobId: job.id, error: err.message });
-    await FailedJob.create({
-      jobId: job.id,
-      requestId: job.data.requestId,
-      error: err.message,
-      attemptsMade: job.attemptsMade,
-      payload: job.data,
-    });
-  });
 };
 
 const getRequestQueue = () => requestQueue;

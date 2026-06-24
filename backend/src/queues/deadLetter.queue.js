@@ -1,16 +1,15 @@
 const { Queue } = require('bullmq');
-const { getRedis } = require('../config/redis');
+const { isRedisAvailable, getQueueConnection } = require('../config/redis');
 
 let deadLetterQueue;
 
 const initDeadLetterQueue = () => {
-  const redis = getRedis();
-  if (!redis) {
+  if (!isRedisAvailable()) {
     return;
   }
 
   deadLetterQueue = new Queue('deadLetterQueue', {
-    connection: redis,
+    connection: getQueueConnection(),
   });
 };
 

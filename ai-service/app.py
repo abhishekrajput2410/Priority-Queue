@@ -1,12 +1,25 @@
+import os
 from flask import Flask, jsonify, request
 from priorityPredictor import PriorityPredictor
+from train import train_model
 
+MODEL_PATH = 'priority_model.pkl'
 app = Flask(__name__)
-predictor = PriorityPredictor('priority_model.pkl')
+
+
+def load_predictor():
+    if not os.path.exists(MODEL_PATH):
+        train_model()
+    return PriorityPredictor(MODEL_PATH)
+
+
+predictor = load_predictor()
+
 
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({'status': 'ok', 'service': 'AI Priority Predictor'})
+
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -17,6 +30,7 @@ def predict():
 
     prediction = predictor.predict(data)
     return jsonify({'predictedPriority': prediction})
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

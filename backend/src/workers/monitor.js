@@ -2,10 +2,10 @@ const os = require('os');
 const { createProcessingWorker } = require('./processor');
 const { logger } = require('../config/logger');
 const { registerWorker } = require('../services/worker.service');
-const { getRedis } = require('../config/redis');
+const { isRedisAvailable } = require('../config/redis');
 
 const createWorkerCluster = async () => {
-  if (!getRedis()) {
+  if (!isRedisAvailable()) {
     logger.warn('Skipping worker cluster startup because Redis is unavailable');
     return;
   }

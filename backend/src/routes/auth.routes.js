@@ -8,8 +8,11 @@ const {
   handleForgotPassword,
   handleResetPassword,
   handleVerifyEmail,
+  handleListUsers,
+  handleCreateUser,
 } = require('../controllers/auth.controller');
 const authMiddleware = require('../middleware/auth.middleware');
+const { authorize } = require('../middleware/role.middleware');
 const { validateRequest } = require('../middleware/validation.middleware');
 
 const router = express.Router();
@@ -51,5 +54,19 @@ router.post(
   handleResetPassword,
 );
 router.get('/verify', handleVerifyEmail);
+router.get('/users', authMiddleware, authorize(['Admin']), handleListUsers);
+router.post(
+  '/users',
+  authMiddleware,
+  authorize(['Admin']),
+  [
+    body('name').notEmpty(),
+    body('email').isEmail(),
+    body('password').isLength({ min: 8 }),
+    body('role').optional().isIn(['Admin', 'User']),
+  ],
+  validateRequest,
+  handleCreateUser,
+);
 
 module.exports = router;

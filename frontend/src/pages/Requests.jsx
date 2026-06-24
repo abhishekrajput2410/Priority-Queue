@@ -25,8 +25,16 @@ export default function Requests() {
   });
 
   const handleSubmit = async (payload) => {
-    await mutation.mutateAsync(payload);
+    try {
+      await mutation.mutateAsync(payload);
+    } catch {
+      // Error state is surfaced via mutation.isError below.
+    }
   };
+
+  const submitError = mutation.error?.response?.data?.message
+    || mutation.error?.message
+    || 'Failed to submit request. Please try again.';
 
   if (isAdmin) {
     return (
@@ -37,7 +45,7 @@ export default function Requests() {
         </div>
         <RequestForm onSubmit={handleSubmit} />
         <div className="rounded-[2rem] bg-white/5 p-6 shadow-panel">
-          {mutation.isError && <p className="text-sm text-red-400">Failed to submit request.</p>}
+          {mutation.isError && <p className="text-sm text-red-400">{submitError}</p>}
           {mutation.isSuccess && <p className="text-sm text-green-300">Request queued successfully.</p>}
           {isLoading ? (
             <div className="py-12 text-center text-brand-300">Loading requests…</div>
@@ -59,7 +67,7 @@ export default function Requests() {
       <RequestForm onSubmit={handleSubmit} />
       {mutation.isError && (
         <div className="rounded-[2rem] bg-red-500/10 p-6 border border-red-500/30 shadow-panel">
-          <p className="text-sm text-red-400">Failed to submit request. Please try again.</p>
+          <p className="text-sm text-red-400">{submitError}</p>
         </div>
       )}
       {mutation.isSuccess && (

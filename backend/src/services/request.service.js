@@ -4,6 +4,7 @@ const { enqueueRequest } = require('../queues/request.queue');
 const { requestsTotal, queueSize } = require('../config/metrics');
 const { normalizePriority, scoreToPriority } = require('../utils/priority.util');
 const { createAuditEntry } = require('./audit.service');
+const { logger } = require('../config/logger');
 
 const createRequest = async ({ title, description, category, type, payload, priority, slaDeadline, createdBy }) => {
   const requestId = uuidv4();
@@ -21,10 +22,14 @@ const createRequest = async ({ title, description, category, type, payload, prio
     createdBy,
   });
 
-  await enqueueRequest({
-    ...request.toObject(),
-    requestId,
-  });
+  try {
+    await enqueueRequest({
+      ...request.toObject(),
+      requestId,
+    });
+  } catch (error) {
+    logger.warn('Request saved but queue enqueue failed', { requestId, error: error.message });
+  }
   await createAuditEntry({
     user: createdBy,
     action: 'create_request',

@@ -12,9 +12,9 @@ router.post(
   '/predict',
   [
     body('type').notEmpty(),
-    body('payloadSize').isNumeric(),
-    body('waitTime').isNumeric(),
-    body('queueSize').isNumeric(),
+    body('payloadSize').isFloat({ min: 0 }),
+    body('waitTime').isFloat({ min: 0 }),
+    body('queueSize').isFloat({ min: 0 }),
     body('sla').isISO8601(),
   ],
   validateRequest,

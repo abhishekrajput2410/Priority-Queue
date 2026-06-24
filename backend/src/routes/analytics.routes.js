@@ -5,5 +5,5 @@ const { handleAnalytics } = require('../controllers/analytics.controller');
 
 const router = express.Router();
 router.use(authMiddleware);
-router.get('/', authorize(['Admin']), handleAnalytics);
+router.get('/', authorize(['Admin', 'User']), handleAnalytics);
 module.exports = router;

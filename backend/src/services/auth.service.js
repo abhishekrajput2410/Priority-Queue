@@ -42,11 +42,9 @@ const register = async ({
     verified: false,
   });
 
-  const frontendUrl =
-    process.env.FRONTEND_URL || 'http://localhost:3000';
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-  const verificationUrl =
-    `${frontendUrl}/verify?token=${verificationToken}`;
+  const verificationUrl = `${frontendUrl}/verify?token=${verificationToken}`;
 
   await sendEmail({
     to: email,
@@ -105,8 +103,8 @@ const login = async ({ email, password }) => {
     .select('+password');
 
   if (
-    !user ||
-    !(await comparePassword(password, user.password))
+    !user
+    || !(await comparePassword(password, user.password))
   ) {
     throw new Error('Invalid credentials');
   }
@@ -152,7 +150,7 @@ const logout = async (userId) => {
 const refreshToken = async (token) => {
   const decoded = jwt.verify(
     token,
-    process.env.JWT_SECRET
+    process.env.JWT_SECRET,
   );
 
   const user = await User.findById(decoded.id);
@@ -179,8 +177,7 @@ const forgotPassword = async (email) => {
   const token = crypto.randomBytes(20).toString('hex');
 
   user.resetToken = token;
-  user.resetTokenExpiry =
-    Date.now() + 1000 * 60 * 30; // 30 Minutes
+  user.resetTokenExpiry = Date.now() + 1000 * 60 * 30; // 30 Minutes
 
   await user.save();
 
@@ -220,6 +217,31 @@ const resetPassword = async ({
   await user.save();
 };
 
+const listUsers = async () => User.find().select('-password').sort({ createdAt: -1 });
+
+const createUserByAdmin = async ({ name, email, password, role = 'User' }) => {
+  const existing = await User.findOne({ email });
+  if (existing) throw new Error('Email already in use');
+  if (!['Admin', 'User'].includes(role)) throw new Error('Invalid role. Must be Admin or User.');
+
+  const user = await User.create({
+    name,
+    email,
+    password: await hashPassword(password),
+    role,
+    verified: true,
+  });
+
+  await createAuditEntry({
+    user: user._id,
+    action: 'admin_create_user',
+    resource: 'User',
+    metadata: { email, role },
+  });
+
+  return user;
+};
+
 /* =========================================================
    EXPORTS
 ========================================================= */
@@ -231,4 +253,6 @@ module.exports = {
   refreshToken,
   forgotPassword,
   resetPassword,
+  listUsers,
+  createUserByAdmin,
 };

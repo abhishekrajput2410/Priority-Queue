@@ -1,7 +1,6 @@
 import joblib
 import numpy as np
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import OneHotEncoder
+
 
 class PriorityPredictor:
     def __init__(self, model_path):
@@ -13,8 +12,16 @@ class PriorityPredictor:
     def extract_features(self, payload):
         categories = np.array([[payload['type'], payload['sla']]])
         encoded = self.encoder.transform(categories)
+        if hasattr(encoded, 'toarray'):
+            encoded = encoded.toarray()
         features = np.concatenate(
-            [encoded.toarray(), np.array([[payload['payloadSize'], payload['waitTime'], payload['queueSize']]], dtype=float)],
+            [
+                encoded,
+                np.array(
+                    [[payload['payloadSize'], payload['waitTime'], payload['queueSize']]],
+                    dtype=float,
+                ),
+            ],
             axis=1,
         )
         return features
